@@ -18,12 +18,10 @@ def download_youtube_audio(url: str) -> str:
             }
         ],
         "quiet": True,
-        # BYPASS 1: Force mobile & TV API clients (they don't use JavaScript challenges)
-        "extractor_args": {"youtube": ["player_client=ios,tv"]},
-        # BYPASS 2: Hardcode a real iPhone User-Agent
-        "http_headers": {
-            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.3.1 Mobile/15E148 Safari/604.1"
-        }
+        # Force yt-dlp to use the specific Debian Linux Node.js path
+        "js_runtimes": {"node": {"path": "nodejs"}},
+        # Impersonate a mobile device to lower YouTube's security threshold
+        "extractor_args": {"youtube": ["player_client=ios"]},
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
