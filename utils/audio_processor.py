@@ -18,8 +18,9 @@ def download_youtube_audio(url: str) -> str:
             }
         ],
         "quiet": True,
-        # THIS IS THE NEW LINE TO BYPASS THE 403 ERROR:
-        "js_runtimes": {"node": {"path": "node"}},
+        # THIS IS THE MAGIC BYPASS: 
+        # Spoof an iOS client to skip YouTube's JS challenges entirely
+        "extractor_args": {"youtube": ["player_client=ios"]},
     }
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
