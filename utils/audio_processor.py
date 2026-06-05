@@ -57,7 +57,12 @@ def chunk_audio(wav_path : str , chunk_minutes : int = 10) -> list:
 def process_input(source: str) -> list:
     if source.startswith("http://") or source.startswith("https://"):
         print("Detected YouTube URL. Downloading audio...")
-        wav_path = download_youtube_audio(source)
+        try:
+            wav_path = download_youtube_audio(source)
+        except Exception as e:
+            # If YouTube blocks the cloud server, stop the pipeline gracefully
+            st.error("🚨 YouTube aggressively blocked this cloud server's IP address. Please download the video/audio to your computer and upload the local file using the box on the left instead!")
+            st.stop() # Stops the rest of the code from running and crashing
     else:
         print("Detected local file. Converting to WAV...")
         wav_path = convert_to_wav(source)
@@ -66,5 +71,3 @@ def process_input(source: str) -> list:
     chunks = chunk_audio(wav_path)
     print(f"Audio ready — {len(chunks)} chunk(s) created.")
     return chunks
-
-
