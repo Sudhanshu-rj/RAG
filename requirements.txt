@@ -46,3 +46,4 @@ requests>=2.32.0
 
 langchain-chroma
 yt-dlp-ejs
+curl_cffi
