@@ -1,33 +1,31 @@
-import yt_dlp
+import streamlit as st
+from pytubefix import YouTube
 from pydub import AudioSegment
 import os
-import streamlit as st  
 
 DOWNLOAD_DIR = 'downloades'
-os.makedirs(DOWNLOAD_DIR,exist_ok = True)
+os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
 def download_youtube_audio(url: str) -> str:
-    output_path = os.path.join(DOWNLOAD_DIR, "%(title)s.%(ext)s")
-    ydl_opts = {
-        "format": "bestaudio/best",
-        "outtmpl": output_path,
-        "postprocessors": [
-            {
-                "key": "FFmpegExtractAudio",
-                "preferredcodec": "wav",
-                "preferredquality": "192",
-            }
-        ],
-        "quiet": True,
-        # Force yt-dlp to use the specific Debian Linux Node.js path
-        "js_runtimes": {"node": {"path": "nodejs"}},
-        # Impersonate a mobile device to lower YouTube's security threshold
-        "extractor_args": {"youtube": ["player_client=ios"]},
-    }
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        filename = ydl.prepare_filename(info).replace(".webm", ".wav").replace(".m4a", ".wav")
-    return filename
+    # use_po_token=True is the magic trick that bypasses the 403 Forbidden error!
+    yt = YouTube(url, use_po_token=True)
+    
+    # Grab the highest quality audio-only stream
+    audio_stream = yt.streams.get_audio_only()
+    
+    # Download the raw file (usually .m4a or .mp4)
+    downloaded_file = audio_stream.download(output_path=DOWNLOAD_DIR)
+    
+    # Send it directly to your existing converter to make it a clean 16kHz WAV!
+    wav_file = convert_to_wav(downloaded_file)
+    
+    # Optional: Delete the original downloaded file to save server space
+    try:
+        os.remove(downloaded_file)
+    except:
+        pass
+        
+    return wav_file
 
 
 def convert_to_wav(input_path: str) -> str:
